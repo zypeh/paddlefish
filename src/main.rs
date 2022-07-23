@@ -18,13 +18,6 @@ impl<'a, K, V> Default for Node<K, V> {
     }
 }
 
-// impl<'a, K, V> Clone for Node<K, V> {
-//     fn clone(&self) -> Self {
-//         match &self {
-//             Node::Empty => Node::Empty,
-//         }
-//     }
-// }
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct HashMap<K, V> {
     // every resize
