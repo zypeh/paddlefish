@@ -5,7 +5,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Eq, PartialEq, Hash, Debug)]
 enum Node<K, V> {
     HasCollision(LinkedList<(K, V)>),
     Perfect(K, V),
@@ -15,6 +15,20 @@ enum Node<K, V> {
 impl<'a, K, V> Default for Node<K, V> {
     fn default() -> Self {
         Node::Empty
+    }
+}
+
+impl<K: Clone, V: Clone> Clone for Node<K, V> {
+    fn clone(&self) -> Self {
+        match &self {
+            &Node::Empty => Node::Empty,
+            &Node::Perfect(k, v) => Node::Perfect(k.clone(), v.clone()),
+            &Node::HasCollision(ll) => {
+                let mut new_ll = LinkedList::new();
+                new_ll.clone_from(ll);
+                Node::HasCollision(new_ll)
+            }
+        }
     }
 }
 
@@ -29,12 +43,14 @@ pub struct HashMap<K, V> {
     buckets: Vec<Node<K, V>>,
 }
 
-impl<K, V> Default for HashMap<K, V> {
+impl<K: Clone, V: Clone> Default for HashMap<K, V> {
     fn default() -> Self {
+        let mut buckets = Vec::with_capacity(8);
+        buckets.fill(Node::Empty);
         HashMap {
             max_size: 8,
             keys: vec![],
-            buckets: Vec::with_capacity(8),
+            buckets: buckets,
         }
     }
 }
@@ -51,7 +67,7 @@ pub fn determine_size(s: usize) -> usize {
 impl<K, V> HashMap<K, V>
 where
     K: Copy + Clone + PartialEq + Hash + Debug,
-    V: Copy + Debug,
+    V: Copy + Clone + Debug,
 {
     pub fn keys(&self) -> Vec<K> {
         self.keys.clone()
