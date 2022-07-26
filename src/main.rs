@@ -32,7 +32,7 @@ impl<K: Clone, V: Clone> Clone for Node<K, V> {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Hash, Debug)]
 pub struct HashMap<K, V> {
     // every resize
     max_size: usize,
@@ -43,6 +43,16 @@ pub struct HashMap<K, V> {
     buckets: Vec<Node<K, V>>,
 }
 
+impl<K: Eq, V> PartialEq for HashMap<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.keys.len() != other.keys.len() {
+            false
+        } else {
+            self.keys.iter().all(|key| other.keys.contains(key))
+        }
+    }
+}
+
 impl<K: Clone, V: Clone> Default for HashMap<K, V> {
     fn default() -> Self {
         let mut buckets = Vec::with_capacity(8);
@@ -50,18 +60,23 @@ impl<K: Clone, V: Clone> Default for HashMap<K, V> {
         HashMap {
             max_size: 8,
             keys: vec![],
-            buckets: buckets,
+            buckets,
         }
     }
 }
 
-pub fn determine_size(s: usize) -> usize {
+/// this is used in from_vec
+pub fn init_determine_size(s: usize) -> usize {
     if s < 8 {
         8
     } else {
         let m = (s as f32).log2().ceil();
         2_u32.pow(m as u32).try_into().unwrap()
     }
+}
+
+fn determine_size(s: usize, load_factor: f32) -> usize {
+    todo!()
 }
 
 impl<K, V> HashMap<K, V>
@@ -83,7 +98,7 @@ where
 
     pub fn from_vec(xs: Vec<(K, V)>) -> Self {
         let keys: Vec<K> = xs.iter().map(|x| x.0).collect();
-        let bucket_size = determine_size(xs.len());
+        let bucket_size = init_determine_size(xs.len());
 
         println!("bucket size is {:?}", bucket_size);
         let mut bucket_group = vec![Node::Empty; bucket_size];
@@ -106,7 +121,6 @@ where
                     let ll = LinkedList::from([(*k, *v), (key, value)]);
                     bucket_group[i] = Node::HasCollision(ll.to_owned())
                 }
-                _ => unreachable!(),
             }
         }
         HashMap {
@@ -148,12 +162,12 @@ mod tests {
 
     #[test]
     fn test_determine_size() {
-        assert_eq!(determine_size(8), 8);
-        assert_eq!(determine_size(9), 16);
-        assert_eq!(determine_size(15), 16);
-        assert_eq!(determine_size(16), 16);
-        assert_eq!(determine_size(17), 32);
-        assert_eq!(determine_size(18), 32);
+        assert_eq!(init_determine_size(8), 8);
+        assert_eq!(init_determine_size(9), 16);
+        assert_eq!(init_determine_size(15), 16);
+        assert_eq!(init_determine_size(16), 16);
+        assert_eq!(init_determine_size(17), 32);
+        assert_eq!(init_determine_size(18), 32);
     }
 
     #[test]
