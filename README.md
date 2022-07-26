@@ -1,4 +1,4 @@
-### Peddlefish
+### Paddlefish
 
 Just a separate chaining hash map inspired by
 [Boost.Unordered](https://www.boost.org/doc/libs/develop/libs/unordered/doc/html/unordered.html).
